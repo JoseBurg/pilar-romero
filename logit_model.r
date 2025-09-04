@@ -31,7 +31,7 @@ datos_base <- purrr::map(datos_base, ~ provincia_to_region(.x) |>
 datos_base <- purrr::map(
   datos_base,
   ~.x |> 
-    select(no_es_beneficiario, all_of(variables_modelo6)) |> 
+    select(migrante, no_es_beneficiario, all_of(variables_modelo6)) |> 
     mutate(
       across(
         everything(),
@@ -74,7 +74,7 @@ for (nombre_anio in names(datos_base)) {
     vars_actuales <- variables_independientes[[nombre_modelo]]
     
     # Creamos la fórmula
-    formulas <- paste("no_es_beneficiario ~", paste(vars_actuales, collapse = " + "))
+    formulas <- paste("migrante ~", paste(vars_actuales, collapse = " + "))
 
     # Corremos el modelo
     modelo_logit <- glm(as.formula(formulas), family = binomial(link = "logit"), data = datos_actuales)

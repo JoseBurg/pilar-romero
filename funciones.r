@@ -24,6 +24,8 @@ transformar_variables <- function(data) {
        # Transformar variables según sea necesario
        # Ejemplo: crear variable dummy para sexo
        ano = as.numeric(ano),
+       edad = as.numeric(edad),
+       migrante = ifelse(is.na(razon_traslado), 0, 1),
        sexo_femenino = ifelse(sexo == "F", 1, 0),
        # Crear variable dummy para estado civil
        casado_union = ifelse(estado_civil %in% c("Casado(a)", "Unión libre"), 1, 0),
@@ -58,7 +60,7 @@ variables_dummy <- function(data) {
     data |>
      dplyr::mutate(
         # variable grupo edad
-       edad = dplyr::case_when(
+       edad_range = dplyr::case_when(
          edad >= 0 & edad <= 14 ~ "0-14",
          edad >= 15 & edad <= 29 ~ "15-29",
          edad >= 30 & edad <= 44 ~ "30-44",
@@ -66,11 +68,11 @@ variables_dummy <- function(data) {
          edad >= 60 ~ "60+"
        ),
        # Variables que vamos a  cambiar pero efientizado con case_when:
-       edad_0_14 = ifelse(edad == "0-14", 1, 0),
-       edad_15_29 = ifelse(edad == "15-29", 1, 0),
-       edad_30_44 = ifelse(edad == "30-44", 1, 0),
-       edad_45_59 = ifelse(edad == "45-59", 1, 0),
-       edad_60_mas = ifelse(edad == "60+", 1, 0),
+       edad_0_14 = ifelse(edad_range== "0-14", 1, 0),
+       edad_15_29 = ifelse(edad_range== "15-29", 1, 0),
+       edad_30_44 = ifelse(edad_range== "30-44", 1, 0),
+       edad_45_59 = ifelse(edad_range== "45-59", 1, 0),
+       edad_60_mas = ifelse(edad_range== "60+", 1, 0),
 
        # Dummies para TODAS las regiones
        region_gran_santo_domingo = ifelse(region == "Gran Santo Domingo", 1, 0),
@@ -111,6 +113,13 @@ variables_modelo6 <- c("sexo_femenino", "casado_union", "jefe_hogar",
                         "edad_0_14", "edad_15_29", "edad_30_44", "edad_45_59",
                          "region_gran_santo_domingo", "region_cibao_norte", "region_sur", "region_este",
                          "educacion_primaria", "educacion_secundaria_tecnica", "educacion_universitario_postgrado",
-                         "empresa_rnc", "traslado_trabajo", "traslado_familiar",
-                         "traslado_estudios", "traslado_salud", "traslado_trabajo_emp")
+                         "empresa_rnc"
+                       # , "traslado_trabajo", "traslado_familiar",
+                       #   "traslado_estudios", "traslado_salud", "traslado_trabajo_emp"
+                       )
+
+variables_determinantes <- c("sexo_femenino", "casado_union", "jefe_hogar",
+                             "educacion_primaria", "educacion_secundaria_tecnica", 
+                             "educacion_universitario_postgrado",
+                             "region_cibao_norte", "region_sur", "region_este")
 

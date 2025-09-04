@@ -4,46 +4,72 @@ library(modelr)
 
 
 
+
+# Cargar datos: -----------------------------------------------------------
+
+datos_base <- list(
+  enfct_2019,
+  enfct_2020,
+  enfct_2021,
+  enfct_2022,
+  enfct_2023,
+  enfct_2024
+)
+
+
+datos_base <- purrr::map(datos_base, ~ provincia_to_region(.x) |>
+  transformar_variables() |>
+  variables_dummy())
+
+variables_determinantes <- c("sexo_femenino", "casado_union", "jefe_hogar",
+                             "educacion_primaria", "educacion_secundaria_tecnica", 
+                             "educacion_universitario_postgrado",
+                             "region_cibao_norte", "region_sur", "region_este")
+
+
+datos_base <- purrr::map(
+  datos_base,
+  ~.x |> 
+    select(migrante, all_of(variables_determinantes)) |> 
+    mutate(
+      across(
+        everything(),
+          as.numeric
+        )
+      )
+  )
+
+names(datos_base) <- 2019:2024
+
 datos_aninados <- bind_rows(datos_base, .id = "year") |> 
   group_by(year) |> 
   nest()
 
 
-modelo_logit <- function(datos, especificacion){
-  formula <- paste("no_es_beneficiario ~", paste(especificacion, collapse = " + "))
+modelo <- function(datos, especificacion = variables_determinantes, type = NULL){
+  formula <- paste("migrante ~", paste(especificacion, collapse = " + "))
   
-  glm(as.formula(formula), family = binomial(link = "logit"), data = datos)
-
+  if(is.null(type)) {
+      lm(as.formula(formula), data = datos)
+  } else {
+      glm(as.formula(formula), family = binomial(link = type), data = datos)
+    }
 }
 
 
-map(datos_aninados$data, ~ modelo_logit(.x, especificacion = variables_modelo6))
+
+datos_aninados |> 
+  mutate(
+    modelo_lineal = map(data, ~ modelo(.x)),
+    modelo_probit = map(data, ~ modelo(.x, type = "probit")),
+    modelo_logit = map(data, ~  modelo(.x, type = "logit"))
+    ) |> 
+  mutate(
+    residual_lineal = map2(data, modelo_lineal, add_residuals)
+    ) |> 
+  unnest(residual_lineal) |> 
+  as.data.frame()
+  
+  
 
 
-
-
-# Revisa la relación entre 'jefe_hogar' y tu variable dependiente
-table(
-  Jefe_de_hogar = datos_base[[1]]$jefe_hogar, 
-  No_es_Beneficiario = datos_base[[1]]$no_es_beneficiario
-)
-
-# Revisa la relación entre 'casado_union' y tu variable dependiente
-table(
-  Casado_o_Union = datos_base[[1]]$casado_union, 
-  No_es_Beneficiario = datos_base[[1]]$no_es_beneficiario
-)
-
-# Usa una de tus bases de datos, por ejemplo, la primera de la lista.
-
-# Revisa la variable 'jefe_hogar'
-table(
-  Jefe_Hogar = datos_base[[1]]$jefe_hogar, 
-  Resultado = datos_base[[1]]$no_es_beneficiario
-)
-
-# Revisa la variable 'casado_union'
-table(
-  Casado_Union = datos_base[[1]]$casado_union, 
-  Resultado = datos_base[[1]]$no_es_beneficiario
-)
