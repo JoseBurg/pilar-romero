@@ -2,6 +2,7 @@ library(broom)
 library(tidyverse)
 library(modelr)
 
+source('./funciones.r', chdir = TRUE)
 
 
 

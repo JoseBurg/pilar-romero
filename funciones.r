@@ -121,5 +121,9 @@ variables_modelo6 <- c("sexo_femenino", "casado_union", "jefe_hogar",
 variables_determinantes <- c("sexo_femenino", "casado_union", "jefe_hogar",
                              "educacion_primaria", "educacion_secundaria_tecnica", 
                              "educacion_universitario_postgrado",
-                             "region_cibao_norte", "region_sur", "region_este")
+                             "edad_0_14", "edad_15_29", "edad_30_44", "edad_45_59",
+                             "region_cibao_norte", "region_sur", "region_este"
+                              # "traslado_trabajo", "traslado_familiar",
+                              #  "traslado_estudios", "traslado_salud"
+                             )
 
